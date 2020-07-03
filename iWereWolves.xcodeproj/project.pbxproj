@@ -13,6 +13,8 @@
 		4935A44724AF6404001553FC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4935A44624AF6404001553FC /* Preview Assets.xcassets */; };
 		4935A45224AF6405001553FC /* iWereWolvesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935A45124AF6405001553FC /* iWereWolvesTests.swift */; };
 		4935A45D24AF6405001553FC /* iWereWolvesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935A45C24AF6405001553FC /* iWereWolvesUITests.swift */; };
+		4935A46B24AF64B4001553FC /* PlayerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935A46A24AF64B4001553FC /* PlayerStorage.swift */; };
+		4935A46D24AF64C7001553FC /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935A46C24AF64C7001553FC /* Models.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,8 @@
 		4935A45824AF6405001553FC /* iWereWolvesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iWereWolvesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4935A45C24AF6405001553FC /* iWereWolvesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iWereWolvesUITests.swift; sourceTree = "<group>"; };
 		4935A45E24AF6405001553FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4935A46A24AF64B4001553FC /* PlayerStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerStorage.swift; sourceTree = "<group>"; };
+		4935A46C24AF64C7001553FC /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 				4935A44324AF6404001553FC /* Assets.xcassets */,
 				4935A44824AF6404001553FC /* Info.plist */,
 				4935A44524AF6404001553FC /* Preview Content */,
+				4935A46A24AF64B4001553FC /* PlayerStorage.swift */,
+				4935A46C24AF64C7001553FC /* Models.swift */,
 			);
 			path = iWereWolves;
 			sourceTree = "<group>";
@@ -260,7 +266,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4935A44224AF6403001553FC /* ContentView.swift in Sources */,
+				4935A46B24AF64B4001553FC /* PlayerStorage.swift in Sources */,
 				4935A44024AF6403001553FC /* iWereWolvesApp.swift in Sources */,
+				4935A46D24AF64C7001553FC /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

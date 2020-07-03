@@ -7,11 +7,17 @@
 
 import SwiftUI
 
+let testData =
+    [
+        Player(name: "Test", role: .init(type: .amor), state: .alive, faith: .amor),
+        Player(name: "Test2", role: .init(type: .villager), state: .alive, faith: .none)
+    ]
+
 @main
 struct iWereWolvesApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(playerStore: PlayerStorage(players: testData))
         }
     }
 }
