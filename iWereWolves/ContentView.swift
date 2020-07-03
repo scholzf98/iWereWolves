@@ -37,7 +37,6 @@ struct PlayerRow: View {
                 Text(player.role.cause.name)
             }
             
-            
             if player.faith != .none {
                 FaithsView(faith: player.faith)
             }
@@ -46,37 +45,37 @@ struct PlayerRow: View {
             
         }.contextMenu {
             
-            if playerStore.setup {
+            if playerStore.needSetup() {
                 Button(action: {
-                    playerStore.setLoved(player: &player)
+                    playerStore.setLoved(player: player)
                 }) {
                     Image(systemName: "heart.circle")
                 }
             } else {
                 
                 Button(action: {
-                    playerStore.perform(player: &player, state: .dead, cause: .killed)
+                    playerStore.perform(player: player, state: .dead, cause: .killed)
                 }) {
                     Text("Töten")
                     Image(systemName: "multiply.circle")
                 }
                 
                 Button(action: {
-                    playerStore.perform(player: &player, state: .dead, cause: .killed)
+                    playerStore.perform(player: player, state: .dead, cause: .killed)
                 }) {
                     Text("Fressen")
                     Image(systemName: "multiply.circle")
                 }
                 
                 Button(action: {
-                    playerStore.perform(player: &player, state: .dead, cause: .lynch)
+                    playerStore.perform(player: player, state: .dead, cause: .lynch)
                 }) {
                     Text("Lynchen")
                     Image(systemName: "multiply.circle")
                 }
                 
                 Button(action: {
-                    playerStore.perform(player: &player, state: .alive, cause: .revive)
+                    playerStore.perform(player: player, state: .alive, cause: .revive)
                 }) {
                     Text("Wiederbeleben")
                     Image(systemName: "checkmark.circle")
@@ -157,8 +156,9 @@ struct ContentView: View {
     @State var showAmorAlert = false
     
     func startGame() {
-        playerStore.needSetup()
-        showAmorAlert.toggle()
+        if playerStore.needSetup() {
+            showAmorAlert.toggle()
+        }
     }
     
     var body: some View {

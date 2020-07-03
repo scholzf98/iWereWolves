@@ -50,6 +50,16 @@ enum RoleCause {
         }
     }
     
+    var isDeadly: Bool {
+        
+        switch self {
+        case .eat, .lynch, .poison, .killed: return true
+        default:
+            return false
+        }
+        
+    }
+    
 }
 
 struct Role: Hashable {
@@ -95,29 +105,33 @@ enum RoleState {
     case alive, dead
 }
 
-struct Player: Identifiable {
+class Player: Identifiable, ObservableObject {
     
     var id = UUID()
     var name: String
     var role: Role
     var state: RoleState
     var faith: Faith
+    var isMajor: Bool
     
-    static var `default` = Self.init(name: "", role: .init(type: .villager), state: .alive, faith: .none)
-    
-    mutating func setState(state: RoleState) {
+    func setState(state: RoleState) {
         self.state = state
     }
     
-    mutating func setFaith(faith: Faith) {
+    func setFaith(faith: Faith) {
         self.faith = faith
     }
     
-    init(name: String, role: Role, state: RoleState = .alive, faith: Faith = .none) {
+    func setMajor(major: Bool) {
+        self.isMajor = major
+    }
+    
+    init(name: String, role: Role, state: RoleState = .alive, faith: Faith = .none, isMajor: Bool = false) {
         self.name = name
         self.role = role
         self.state = state
         self.faith = faith
+        self.isMajor = false
     }
     
 }
