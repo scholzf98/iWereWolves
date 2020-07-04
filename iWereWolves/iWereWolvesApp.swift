@@ -9,9 +9,9 @@ import SwiftUI
 
 let testData =
     [
-        Player(name: "Test", role: .init(type: .amor), state: .alive, faith: .amor),
-        Player(name: "Test2", role: .init(type: .villager), state: .alive, faith: .loved),
-        Player(name: "Test3", role: .init(type: .villager), state: .alive, faith: .none, isMajor: true)
+        Player(name: "Test", role: .init(type: .amor), state: .alive, faiths: [.amor]),
+        Player(name: "Test2", role: .init(type: .villager), state: .alive, faiths: [.loved]),
+        Player(name: "Test3", role: .init(type: .villager), state: .alive, faiths: [.none])
     ]
 
 @main

@@ -25,21 +25,19 @@ final class PlayerStorage: ObservableObject {
     private func checkFaiths(player: Player) {
         switch player.role.type {
         case .amor:
-            player.setFaith(faith: .amor)
+            player.addFaith(faith: .amor)
         default:
             break
         }
     }
     
     func addPlayer(with name: String, role: RoleType) {
-        
         var player = Player(name: name, role: .init(type: role))
         checkFaiths(player: player)
         players.append(player)
-        
     }
     
-    func amorAndLoved(cause: RoleCause) {
+    func performAmorAndLoved(cause: RoleCause) {
         
         if let loved = getPlayer(for: .loved), let amor = getPlayer(for: .amor) {
             
@@ -49,6 +47,13 @@ final class PlayerStorage: ObservableObject {
             amor.setState(state: .dead)
             amor.role.setCause(cause: cause)
             
+            loved.removeFaith(faith: .loved)
+            amor.removeFaith(faith: .amor)
+            
+            if loved.faiths.contains(.major) {
+                
+            }
+            
             objectWillChange.send()
             
         } else {
@@ -57,10 +62,26 @@ final class PlayerStorage: ObservableObject {
         
     }
     
+    func performMajor(cause: RoleCause) {
+        
+        if let major = getPlayer(for: .major) {
+            major.removeFaith(faith: .major)
+        } else {
+            fatalError()
+        }
+        
+    }
+    
     func perform(player: Player, state: RoleState, cause: RoleCause) {
         
-        if cause.isDeadly && (player.faith == .amor || player.faith == .loved) {
-            amorAndLoved(cause: cause)
+        if cause.isDeadly {
+            
+            if player.faiths.contains(.amor) || player.faiths.contains(.loved) {
+                performAmorAndLoved(cause: cause)
+            } else if player.faiths.contains(.major) {
+                performMajor(cause: cause)
+            }
+            
         } else {
             
             player.setState(state: state)
@@ -72,29 +93,42 @@ final class PlayerStorage: ObservableObject {
         
     }
     
-    func needSetup() -> Bool {
+    func needSetup() -> ActiveAlert {
         
-        let amor = players.contains(where: { $0.role.type == .amor })
+        let amor = players.contains(where: { $0.faiths.contains(.amor) })
+        let loved = players.contains(where: { $0.faiths.contains(.loved) })
+        let major = players.contains(where: { $0.faiths.contains(.major)})
         
-        print("amor \(amor)")
-        
-        let loved = players.contains(where: { $0.faith == .loved })
-        
-        print("loved \(loved)")
-        
-        return amor && !loved
+        if amor && !loved {
+            return .loved
+        } else if !major {
+            return .major
+        } else {
+            return .none
+        }
         
     }
     
     func getPlayer(for faith: Faith) -> Player? {
-        return players.first(where: { $0.faith == faith })
+        return players.first(where: { $0.faiths.contains(faith) })
+    }
+    
+    func setMajor(player: Player) {
+        
+        if !player.faiths.contains(.major) {
+            player.faiths.append(.major)
+        }
+        
+        objectWillChange.send()
+        
     }
     
     func setLoved(player: Player) {
         
-        print("pre \(player.name) -> with \(player.faith)")
-        player.setFaith(faith: .loved)
-        print("post \(player.name) -> with \(player.faith)")
+        if !player.faiths.contains(.loved) {
+            player.faiths.append(.loved)
+        }
+        
         objectWillChange.send()
     }
 

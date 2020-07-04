@@ -9,10 +9,15 @@ import SwiftUI
 import Combine
 
 struct FaithsView: View {
-    var faith: Faith
+    var faiths: [Faith]
     
     var body: some View {
-        Image(systemName: faith.imageName)
+        HStack {
+            ForEach(faiths, id: \.self) { faith in
+                Image(systemName: faith.imageName)
+            }
+        }
+        
     }
     
 }
@@ -37,19 +42,27 @@ struct PlayerRow: View {
                 Text(player.role.cause.name)
             }
             
-            if player.faith != .none {
-                FaithsView(faith: player.faith)
+            if !player.faiths.isEmpty {
+                FaithsView(faiths: player.faiths)
             }
             
             Image(systemName: player.state == .alive ? "checkmark.circle" : "multiply.circle")
             
         }.contextMenu {
             
-            if playerStore.needSetup() {
+            if playerStore.needSetup() != .none {
                 Button(action: {
                     playerStore.setLoved(player: player)
                 }) {
+                    Text("Verliebter")
                     Image(systemName: "heart.circle")
+                }
+                
+                Button(action: {
+                    playerStore.setMajor(player: player)
+                }) {
+                    Text("Bürgermeister")
+                    Image(systemName: "person.circle")
                 }
             } else {
                 
@@ -147,56 +160,114 @@ struct AddPlayerView: View {
 
 struct ContentView: View {
         
-    @State var showSettings = false
-    @State var showAddPlayerView = false
+    @State private var showSettings = false
+    @State private var showAddPlayerView = false
     
     @ObservedObject var playerStore: PlayerStorage
     @Environment(\.presentationMode) var presentationMode
     
-    @State var showAmorAlert = false
+    @State private var showAlert = false
+    @State private var activeAlert: ActiveAlert = .none
+    
+    @State private var timeRemaining = 20
+    @State private var headerName =  "Timer"
+    let timer = Timer.publish(every: 1, on: .main, in: .common)
     
     func startGame() {
-        if playerStore.needSetup() {
-            showAmorAlert.toggle()
+        switch playerStore.needSetup() {
+        case .loved:
+            activeAlert = .loved
+            showAlert.toggle()
+        case .major:
+            activeAlert = .major
+            showAlert.toggle()
+        default:
+            activeAlert = .none
+            break
         }
     }
     
     var body: some View {
+        
         NavigationView {
-            
-            List {
-                ForEach(playerStore.players) { player in
-                    PlayerRow(player: player, playerStore: playerStore)
+                
+            Form {
+                
+                Section(header: Text(headerName).font(.title)) {
+                    Button(action: {
+                        timer.connect()
+                    }, label: {
+                        Text("Timer starten")
+                    })
                 }
                 
-            }.listStyle(InsetGroupedListStyle())
-            .navigationTitle("iWere")
-            
-            .navigationBarItems(leading: Button(action: {
-                startGame()
-            }, label: {
-                Text("Starten")
-            })
-            .sheet(isPresented: $showAddPlayerView) {
-                AddPlayerView(playerStore: playerStore)
-            }, trailing: Button(action: { showSettings.toggle() }, label: {
-                Image(systemName: "gear")
-            })
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            })
-            .alert(isPresented: $showAmorAlert) {
-                Alert(title: Text("iWere"), message: Text("Wähle einen Verliebten aus"), dismissButton: .default(Text("OK")))
+                List {
+                    ForEach(playerStore.players) { player in
+                        PlayerRow(player: player, playerStore: playerStore)
+                    }.listStyle(GroupedListStyle())
+                    
+                }
+                .navigationTitle("iWere")
+                
+                .navigationBarItems(leading:
+                                        HStack {
+                                            Button(action: {
+                                                startGame()
+                                            }, label: {
+                                                Text("Starten")
+                                            })
+                                            
+                                            Button(action: {
+                                                print("hello world")
+                                                
+                                            }, label: {
+                                                Text("test")
+                                            })
+                                            
+                                        }, trailing:
+                                            Button(action: {
+                                                showSettings.toggle()
+                                            }, label: {
+                                                Image(systemName: "gear")
+                                            })
+                                            .sheet(isPresented: $showSettings) {
+                                                SettingsView()
+                                            })
+                .alert(isPresented: $showAlert) {
+                    if activeAlert == .loved {
+                        return Alert(title: Text("iWere"), message: Text("Wähle einen Verliebten aus"), dismissButton: .default(Text("OK")))
+                    } else if activeAlert == .timer {
+                        return Alert(title: Text("iWere"), message: Text("Der Timer ist abgelaufen"), dismissButton: .default(Text("OK")))
+                    } else {
+                        return Alert(title: Text("iWere"), message: Text("Wähle einen Bürgermeister aus"), dismissButton: .default(Text("OK")))
+                    }
+                }
+                .sheet(isPresented: $showAddPlayerView) {
+                    AddPlayerView(playerStore: playerStore)
+                }
+            }
+            .gesture(DragGesture(minimumDistance: 50)
+                        .onEnded { _ in
+                            showAddPlayerView.toggle()
+                        }
+                    )
+            .onReceive(timer) { time in
+                if timeRemaining > 0 {
+                    timeRemaining -= 1
+                    headerName = "Timer: \(timeRemaining)"
+                } else if timeRemaining == 0 {
+                    showAlert.toggle()
+                    timer.connect().cancel()
+                    activeAlert = .timer
+                    timeRemaining = 20
+                    headerName = "Timer: \(timeRemaining)"
+                }
             }
         }
-        .gesture(DragGesture(minimumDistance: 50)
-                    .onEnded { _ in
-                        showAddPlayerView.toggle()
-                    }
-                )
     }
-
+            
 }
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

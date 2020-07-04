@@ -93,8 +93,7 @@ enum Faith: String, CaseIterable {
     var imageName: String {
         switch self {
         case .major: return "person.circle"
-        case .amor: return "heart.circle"
-        case .loved: return "photo"
+        case .amor, .loved: return "heart.circle"
         case .none: return ""
         }
     }
@@ -105,33 +104,35 @@ enum RoleState {
     case alive, dead
 }
 
+enum ActiveAlert {
+    case major, loved, timer, none
+}
+
 class Player: Identifiable, ObservableObject {
     
     var id = UUID()
     var name: String
     var role: Role
     var state: RoleState
-    var faith: Faith
-    var isMajor: Bool
+    var faiths: [Faith]
     
     func setState(state: RoleState) {
         self.state = state
     }
     
-    func setFaith(faith: Faith) {
-        self.faith = faith
+    func addFaith(faith: Faith) {
+        self.faiths.append(faith)
     }
     
-    func setMajor(major: Bool) {
-        self.isMajor = major
+    func removeFaith(faith: Faith) {
+        self.faiths.removeAll(where: {$0 == faith})
     }
     
-    init(name: String, role: Role, state: RoleState = .alive, faith: Faith = .none, isMajor: Bool = false) {
+    init(name: String, role: Role, state: RoleState = .alive, faiths: [Faith] = [.none]) {
         self.name = name
         self.role = role
         self.state = state
-        self.faith = faith
-        self.isMajor = false
+        self.faiths = faiths
     }
     
 }
