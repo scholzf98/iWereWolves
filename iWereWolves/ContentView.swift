@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import AudioToolbox
 
 struct FaithsView: View {
     var faiths: [Faith]
@@ -122,8 +123,8 @@ struct AddPlayerView: View {
     @ObservedObject var playerStore: PlayerStorage
     @Environment(\.presentationMode) private var presentationMode
     
-    @State var playerRole: RoleType = .villager
-    @State var playerName: String = ""
+    @State private var playerRole: RoleType = .villager
+    @State private var playerName: String = ""
     
     func addPlayer() {
         playerStore.addPlayer(with: playerName, role: playerRole)
@@ -169,9 +170,24 @@ struct ContentView: View {
     @State private var showAlert = false
     @State private var activeAlert: ActiveAlert = .none
     
-    @State private var timeRemaining = 20
-    @State private var headerName =  "Timer"
-    let timer = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var timeRemaining: Int = 20
+    @State private var timerName =  "Timer: 0"
+    @State var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    
+    func instantiateTimer() {
+        timer = Timer.publish(every: 1, on: .main, in: .common)
+        return
+    }
+    
+    func startTimer() {
+        if let time = UserDefaults.standard.value(forKey: "dayDuration") as? Int {
+            timeRemaining = time * 60
+        } else {
+            timeRemaining = 60
+        }
+        
+        timer.connect()
+    }
     
     func startGame() {
         switch playerStore.needSetup() {
@@ -191,20 +207,19 @@ struct ContentView: View {
         
         NavigationView {
                 
-            Form {
+            VStack {
                 
-                Section(header: Text(headerName).font(.title)) {
-                    Button(action: {
-                        timer.connect()
-                    }, label: {
-                        Text("Timer starten")
-                    })
-                }
+                Label(timerName, systemImage: "alarm")
+                    .font(.title)
+                    .onTapGesture {
+                        instantiateTimer()
+                        startTimer()
+                    }
                 
                 List {
                     ForEach(playerStore.players) { player in
                         PlayerRow(player: player, playerStore: playerStore)
-                    }.listStyle(GroupedListStyle())
+                    }
                     
                 }
                 .navigationTitle("iWere")
@@ -218,10 +233,9 @@ struct ContentView: View {
                                             })
                                             
                                             Button(action: {
-                                                print("hello world")
-                                                
+                                                playerStore.validate()
                                             }, label: {
-                                                Text("test")
+                                                Text("Validieren")
                                             })
                                             
                                         }, trailing:
@@ -254,15 +268,31 @@ struct ContentView: View {
             .onReceive(timer) { time in
                 if timeRemaining > 0 {
                     timeRemaining -= 1
-                    headerName = "Timer: \(timeRemaining)"
+                    timerName = "Timer: \(timeRemaining)"
                 } else if timeRemaining == 0 {
                     showAlert.toggle()
                     timer.connect().cancel()
                     activeAlert = .timer
-                    timeRemaining = 20
-                    headerName = "Timer: \(timeRemaining)"
+                    
+                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                    
+                    if let time = UserDefaults.standard.value(forKey: "dayDuration") as? Int {
+                        timeRemaining = time * 60
+                    } else {
+                        timeRemaining = 60
+                    }
+                    
+                    timerName = "Timer: \(timeRemaining)"
                 }
             }
+            .onAppear(perform: {
+                if let time = UserDefaults.standard.value(forKey: "dayDuration") as? Int {
+                    timerName = "Timer: \(time * 60)"
+                } else {
+                    timerName = "Timer: \(60)"
+                }
+                
+            })
         }
     }
             

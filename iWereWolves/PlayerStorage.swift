@@ -109,6 +109,12 @@ final class PlayerStorage: ObservableObject {
         
     }
     
+    func validate() {
+        
+        print("validating")
+        
+    }
+    
     func getPlayer(for faith: Faith) -> Player? {
         return players.first(where: { $0.faiths.contains(faith) })
     }
