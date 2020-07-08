@@ -51,7 +51,7 @@ struct PlayerRow: View {
             
         }.contextMenu {
             
-            if playerStore.needSetup() != .none {
+            if playerStore.validate() != .none {
                 Button(action: {
                     playerStore.setLoved(player: player)
                 }) {
@@ -65,6 +65,14 @@ struct PlayerRow: View {
                     Text("Bürgermeister")
                     Image(systemName: "person.circle")
                 }
+                
+                Button(action: {
+                    playerStore.perform(player: player, state: .dead, cause: .shoot)
+                }) {
+                    Text("Erschießen")
+                    Image(systemName: "bolt.fill")
+                }
+                
             } else {
                 
                 Button(action: {
@@ -75,7 +83,7 @@ struct PlayerRow: View {
                 }
                 
                 Button(action: {
-                    playerStore.perform(player: player, state: .dead, cause: .killed)
+                    playerStore.perform(player: player, state: .dead, cause: .eat)
                 }) {
                     Text("Fressen")
                     Image(systemName: "multiply.circle")
@@ -101,19 +109,21 @@ struct PlayerRow: View {
 
 struct SettingsView: View {
     
-    @AppStorage("createLogs") private var createLogs: Bool = false
     @AppStorage("dayDuration") private var dayDuration: Int = 2
+    @AppStorage("showDead") private var showDead: Bool = true
 
     var body: some View {
-        
-        VStack {
-            Toggle(isOn: $createLogs, label: {
-                Text("Logs speichern")
-            }).toggleStyle(SwitchToggleStyle())
-            Stepper("Länge der Tage \(dayDuration)", value: $dayDuration, in: 1...5)
-            Spacer()
-            
-        }.padding()
+        NavigationView {
+            VStack(spacing: 20) {
+                Toggle(isOn: $showDead, label: {
+                    Text("Tote Spieler anzeigen")
+                }).toggleStyle(SwitchToggleStyle())
+                Stepper("Länge der Tage \(dayDuration)", value: $dayDuration, in: 1...5)
+                Spacer()
+                
+            }.navigationTitle(Text("Einstellungen"))
+            .padding()
+        }
     }
     
 }
@@ -161,8 +171,9 @@ struct AddPlayerView: View {
 
 struct ContentView: View {
         
-    @State private var showSettings = false
+    @State private var showSettingsView = false
     @State private var showAddPlayerView = false
+    @State private var showLogsView = false
     
     @ObservedObject var playerStore: PlayerStorage
     @Environment(\.presentationMode) var presentationMode
@@ -172,7 +183,7 @@ struct ContentView: View {
     
     @State private var timeRemaining: Int = 20
     @State private var timerName =  "Timer: 0"
-    @State var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
     
     func instantiateTimer() {
         timer = Timer.publish(every: 1, on: .main, in: .common)
@@ -186,11 +197,11 @@ struct ContentView: View {
             timeRemaining = 60
         }
         
-        timer.connect()
+        _ = timer.connect()
     }
     
     func startGame() {
-        switch playerStore.needSetup() {
+        switch playerStore.validate() {
         case .loved:
             activeAlert = .loved
             showAlert.toggle()
@@ -208,7 +219,7 @@ struct ContentView: View {
         NavigationView {
                 
             VStack {
-                
+            
                 Label(timerName, systemImage: "alarm")
                     .font(.title)
                     .onTapGesture {
@@ -225,39 +236,46 @@ struct ContentView: View {
                 .navigationTitle("iWere")
                 
                 .navigationBarItems(leading:
-                                        HStack {
+                                        HStack(spacing: 25) {
                                             Button(action: {
                                                 startGame()
                                             }, label: {
-                                                Text("Starten")
+                                                Image(systemName: "play.fill")
                                             })
                                             
                                             Button(action: {
-                                                playerStore.validate()
+                                                if playerStore.validate() != .none {
+                                                    activeAlert = playerStore.validate()
+                                                    print(activeAlert)
+                                                    showAlert.toggle()
+                                                }
                                             }, label: {
-                                                Text("Validieren")
+                                                Image(systemName: "checkmark")
                                             })
                                             
                                         }, trailing:
                                             Button(action: {
-                                                showSettings.toggle()
+                                                showSettingsView.toggle()
                                             }, label: {
                                                 Image(systemName: "gear")
                                             })
-                                            .sheet(isPresented: $showSettings) {
-                                                SettingsView()
-                                            })
+                )
                 .alert(isPresented: $showAlert) {
                     if activeAlert == .loved {
                         return Alert(title: Text("iWere"), message: Text("Wähle einen Verliebten aus"), dismissButton: .default(Text("OK")))
                     } else if activeAlert == .timer {
                         return Alert(title: Text("iWere"), message: Text("Der Timer ist abgelaufen"), dismissButton: .default(Text("OK")))
-                    } else {
+                    } else if activeAlert == .major {
                         return Alert(title: Text("iWere"), message: Text("Wähle einen Bürgermeister aus"), dismissButton: .default(Text("OK")))
+                    } else {
+                        return Alert(title: Text("iWere"), message: Text("Der Jäger muss jemanden erschießen"), dismissButton: .default(Text("OK")))
                     }
                 }
                 .sheet(isPresented: $showAddPlayerView) {
                     AddPlayerView(playerStore: playerStore)
+                }
+                .sheet(isPresented: $showSettingsView) {
+                    SettingsView()
                 }
             }
             .gesture(DragGesture(minimumDistance: 50)

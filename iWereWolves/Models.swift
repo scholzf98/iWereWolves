@@ -13,7 +13,7 @@ enum RoleType: String, CaseIterable {
     case prince
     case witch
     case villager
-    case haunter
+    case hunter
     case bodyguard
     case amor
     
@@ -23,7 +23,7 @@ enum RoleType: String, CaseIterable {
         case .prince: return "Prinz"
         case .villager: return "Dorfbewohner"
         case .witch: return "Hexe"
-        case .haunter: return "Jäger"
+        case .hunter: return "Jäger"
         case .bodyguard: return "Leibwächter"
         case .amor: return "Amor"
         }
@@ -33,7 +33,7 @@ enum RoleType: String, CaseIterable {
 
 enum RoleCause {
     
-    case eat, lynch, love, heal, prince, safe, poison, killed, revive, none
+    case eat, lynch, love, heal, prince, safe, poison, killed, revive, shoot, none
     
     var name: String {
         switch self {
@@ -46,6 +46,7 @@ enum RoleCause {
         case .poison: return "Vergiftet"
         case .killed: return "Getötet"
         case .revive: return "Wiederbelebt"
+        case .shoot: return "Erschossen"
         case .none: return ""
         }
     }
@@ -53,7 +54,7 @@ enum RoleCause {
     var isDeadly: Bool {
         
         switch self {
-        case .eat, .lynch, .poison, .killed: return true
+        case .eat, .lynch, .poison, .killed, .shoot: return true
         default:
             return false
         }
@@ -79,13 +80,14 @@ struct Role: Hashable {
 
 enum Faith: String, CaseIterable {
     
-    case major, amor, loved, none
+    case major, amor, loved, hunter, none
     
     var name: String {
         switch self {
         case .major: return "Bürgermeister"
         case .amor: return "Amor"
         case .loved: return "Verliebter"
+        case .hunter: return "Jäger"
         case .none: return "Keine"
         }
     }
@@ -94,6 +96,7 @@ enum Faith: String, CaseIterable {
         switch self {
         case .major: return "person.circle"
         case .amor, .loved: return "heart.circle"
+        case .hunter: return "bolt.fill"
         case .none: return ""
         }
     }
@@ -105,10 +108,10 @@ enum RoleState {
 }
 
 enum ActiveAlert {
-    case major, loved, timer, none
+    case major, loved, timer, hunter, none
 }
 
-class Player: Identifiable, ObservableObject {
+class Player: Identifiable, ObservableObject, Comparable {
     
     var id = UUID()
     var name: String
@@ -133,6 +136,14 @@ class Player: Identifiable, ObservableObject {
         self.role = role
         self.state = state
         self.faiths = faiths
+    }
+    
+    static func == (lhs: Player, rhs: Player) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    static func < (lhs: Player, rhs: Player) -> Bool {
+        return lhs.state != rhs.state
     }
     
 }

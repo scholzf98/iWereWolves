@@ -40,7 +40,6 @@ final class PlayerStorage: ObservableObject {
     func performAmorAndLoved(cause: RoleCause) {
         
         if let loved = getPlayer(for: .loved), let amor = getPlayer(for: .amor) {
-            
             loved.setState(state: .dead)
             loved.role.setCause(cause: cause)
             
@@ -51,13 +50,13 @@ final class PlayerStorage: ObservableObject {
             amor.removeFaith(faith: .amor)
             
             if loved.faiths.contains(.major) {
-                
+                performMajor(cause: cause)
             }
             
             objectWillChange.send()
             
         } else {
-            fatalError()
+            
         }
         
     }
@@ -66,6 +65,19 @@ final class PlayerStorage: ObservableObject {
         
         if let major = getPlayer(for: .major) {
             major.removeFaith(faith: .major)
+            major.role.setCause(cause: cause)
+            major.setState(state: .dead)
+        } else {
+            fatalError()
+        }
+        
+    }
+    
+    func performHunter(cause : RoleCause) {
+        
+        if let hunter = getPlayer(for: .hunter) {
+            hunter.setState(state: .dead)
+            hunter.role.setCause(cause: cause)
         } else {
             fatalError()
         }
@@ -78,26 +90,31 @@ final class PlayerStorage: ObservableObject {
             
             if player.faiths.contains(.amor) || player.faiths.contains(.loved) {
                 performAmorAndLoved(cause: cause)
+                objectWillChange.send()
+                return
             } else if player.faiths.contains(.major) {
                 performMajor(cause: cause)
+                objectWillChange.send()
+                return
+            } else if player.faiths.contains(.hunter) {
+                performHunter(cause: cause)
+                objectWillChange.send()
+                return
             }
             
         } else {
-            
             player.setState(state: state)
             player.role.setCause(cause: cause)
-            
         }
         
         objectWillChange.send()
         
     }
     
-    func needSetup() -> ActiveAlert {
-        
+    func validate() -> ActiveAlert {
         let amor = players.contains(where: { $0.faiths.contains(.amor) })
         let loved = players.contains(where: { $0.faiths.contains(.loved) })
-        let major = players.contains(where: { $0.faiths.contains(.major)})
+        let major = players.contains(where: { $0.faiths.contains(.major) })
         
         if amor && !loved {
             return .loved
@@ -106,12 +123,6 @@ final class PlayerStorage: ObservableObject {
         } else {
             return .none
         }
-        
-    }
-    
-    func validate() {
-        
-        print("validating")
         
     }
     
