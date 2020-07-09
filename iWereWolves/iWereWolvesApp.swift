@@ -12,7 +12,8 @@ let testData =
         Player(name: "Test", role: .init(type: .amor), faiths: [.amor]),
         Player(name: "Test2", role: .init(type: .hunter), faiths: [.loved, .major]),
         Player(name: "Test3", role: .init(type: .bodyguard)),
-        Player(name: "Test5", role: .init(type: .witch), faiths: [.witch, .witchHeal, .witchPoison])
+        Player(name: "Test4", role: .init(type: .witch), faiths: [.witch, .witchHeal, .witchPoison]),
+        Player(name: "Test5", role: .init(type: .prince))
     ]
 
 @main

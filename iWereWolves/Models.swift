@@ -80,7 +80,7 @@ struct Role: Hashable {
 
 enum Faith: String, CaseIterable {
     
-    case major, amor, loved, hunter, witch, witchHeal, witchPoison, shield, none
+    case major, amor, loved, hunter, witch, witchHeal, witchPoison, shield, prince, none
     
     var name: String {
         switch self {
@@ -90,6 +90,7 @@ enum Faith: String, CaseIterable {
         case .hunter: return "Jäger"
         case .witch, .witchHeal, .witchPoison: return ""
         case .shield: return "Beschützt"
+        case .prince: return "Der Prinz"
         case .none: return "Keine"
         }
     }
@@ -102,6 +103,7 @@ enum Faith: String, CaseIterable {
         case .witchHeal: return "plus.circle"
         case .witchPoison: return "multiply.circle"
         case .shield: return "shield.fill"
+        case .prince: return "crown.fill"
         case .none, .witch: return ""
         }
     }

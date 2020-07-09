@@ -38,6 +38,7 @@ final class PlayerStorage: ObservableObject {
         let player = Player(name: name, role: .init(type: role))
         checkFaiths(player: player)
         players.append(player)
+        objectWillChange.send()
     }
     
     func performAmorAndLoved(cause: RoleCause) {
@@ -59,7 +60,7 @@ final class PlayerStorage: ObservableObject {
             objectWillChange.send()
             
         } else {
-            
+            fatalError()
         }
         
     }
@@ -121,6 +122,18 @@ final class PlayerStorage: ObservableObject {
     
     func performShield(player: Player) {
         player.addFaith(faith: .shield)
+        player.setState(state: .alive)
+    }
+    
+    func performPrince(player: Player, cause: RoleCause) {
+        
+        if cause == .lynch {
+            player.addFaith(faith: .prince)
+            player.role.setCause(cause: .prince)
+        } else {
+            player.setState(state: .dead)
+            player.role.setCause(cause: cause)
+        }
     }
     
     func perform(player: Player, state: RoleState, cause: RoleCause) {
@@ -145,6 +158,10 @@ final class PlayerStorage: ObservableObject {
                 performWitch(cause: cause)
                 objectWillChange.send()
                 return
+            } else if player.role.type == .prince {
+                performPrince(player: player, cause: cause)
+                objectWillChange.send()
+                return
             }
             
             player.setState(state: state)
@@ -155,7 +172,6 @@ final class PlayerStorage: ObservableObject {
             
             if cause == .shield {
                 performShield(player: player)
-                player.setState(state: .alive)
                 objectWillChange.send()
                 return
             }
