@@ -16,6 +16,25 @@ enum RoleType: String, CaseIterable {
     case hunter
     case bodyguard
     case amor
+    case seer
+    case lonelyWolf
+    case cultleader
+    case secondSeer
+    case martyr
+    case minion
+    case double
+    case idiot
+    case leper
+    case spellmaster
+    case masonic
+    case prist
+    case lycanthropic
+    case paranormalInvestigator
+    case pacifist
+    case oldMan
+    case summoner
+    case tanner
+    case toughGuy
     
     var name: String {
         switch self {
@@ -26,6 +45,25 @@ enum RoleType: String, CaseIterable {
         case .hunter: return "Jäger"
         case .bodyguard: return "Leibwächter"
         case .amor: return "Amor"
+        case .seer: return "Seher"
+        case .lonelyWolf: return "Einsamer Wolf"
+        case .cultleader: return "Kultführer"
+        case .secondSeer: return "Seherlehrling"
+        case .martyr: return "Märtyrer"
+        case .minion: return "Günstling"
+        case .double: return "Doppelgänger"
+        case .idiot: return "Idiot"
+        case .leper: return "Aussätzige"
+        case .spellmaster: return "Zaubermeisterin"
+        case .masonic: return "Freimaurer"
+        case .prist: return "Prister"
+        case .lycanthropic: return "Lykanthrophin"
+        case .paranormalInvestigator: return "Paranormaler Ermittler"
+        case .pacifist: return "Pazifistin"
+        case .oldMan: return "Alter Mann"
+        case .summoner: return "Beschwörerin"
+        case .tanner: return "Gärber"
+        case .toughGuy: return "Harter Bursche"
         }
     }
     

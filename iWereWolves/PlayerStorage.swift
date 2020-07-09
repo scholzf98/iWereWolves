@@ -129,7 +129,6 @@ final class PlayerStorage: ObservableObject {
         
         if cause == .lynch {
             player.addFaith(faith: .prince)
-            player.role.setCause(cause: .prince)
         } else {
             player.setState(state: .dead)
             player.role.setCause(cause: cause)

@@ -107,7 +107,6 @@ struct PlayerRow: View {
                 
                 Button(action: {
                     
-                    
                     if let shielded = playerStore.getPlayer(for: .shield) {
                         
                         if shielded.id == player.id {
@@ -190,18 +189,51 @@ struct SettingsView: View {
     
     @AppStorage("dayDuration") private var dayDuration: Int = 2
     @AppStorage("showDead") private var showDead: Bool = true
-
+    
+    @ObservedObject var playerStore: PlayerStorage
+    @Environment(\.presentationMode) private var presentationMode
+    
+    @State private var playerRole: RoleType = .villager
+    @State private var playerName: String = ""
+    
+    func addPlayer() {
+        playerStore.addPlayer(with: playerName, role: playerRole)
+        self.presentationMode.wrappedValue.dismiss()
+    }
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Toggle(isOn: $showDead, label: {
-                    Text("Tote Spieler anzeigen")
-                }).toggleStyle(SwitchToggleStyle())
-                Stepper("Länge der Tage \(dayDuration)", value: $dayDuration, in: 1...5)
-                Spacer()
+            Form {
                 
-            }.navigationTitle(Text("Einstellungen"))
-            .padding()
+                Section(header: Text("Einstellungen").font(.title)) {
+                    
+                    Toggle(isOn: $showDead, label: {
+                        Text("Tote Spieler anzeigen")
+                    }).toggleStyle(SwitchToggleStyle())
+                    Stepper("Länge der Tage \(dayDuration)", value: $dayDuration, in: 1...5)
+                    
+                }
+                
+                Section(header: Text("Spieler hinzufügen").font(.title)) {
+                    
+                    Picker(selection: $playerRole, label: Text("Rolle:")) {
+                        ForEach(RoleType.allCases, id: \.self) { role in
+                            Text(role.name).tag(role)
+                        }
+                    }
+                    
+                    HStack {
+                        Text("Spielername:")
+                        TextField("", text: $playerName)
+                    }
+                    
+                }
+                
+                Button(action: addPlayer, label: {
+                    Text("Spieler hinzufügen")
+                })
+            }
+            .navigationTitle(Text("Spieler Menü"))
         }
     }
     
@@ -251,11 +283,8 @@ struct AddPlayerView: View {
 struct ContentView: View {
         
     @State private var showSettingsView = false
-    @State private var showAddPlayerView = false
-    @State private var showLogsView = false
     
     @ObservedObject var playerStore: PlayerStorage
-    @Environment(\.presentationMode) var presentationMode
     
     @State private var showAlert = false
     @State private var activeAlert: ActiveAlert = .none
@@ -351,18 +380,10 @@ struct ContentView: View {
                         return Alert(title: Text("iWere"), message: Text("Der Jäger muss jemanden erschießen!"), dismissButton: .default(Text("OK")))
                     }
                 }
-                .sheet(isPresented: $showAddPlayerView) {
-                    AddPlayerView(playerStore: playerStore)
-                }
                 .sheet(isPresented: $showSettingsView) {
-                    SettingsView()
+                    SettingsView(playerStore: playerStore)
                 }
             }
-            .gesture(DragGesture(minimumDistance: 50)
-                        .onEnded { _ in
-                            showAddPlayerView.toggle()
-                        }
-                    )
             .onReceive(timer) { time in
                 if timeRemaining > 0 {
                     timeRemaining -= 1
