@@ -119,6 +119,10 @@ final class PlayerStorage: ObservableObject {
         }
     }
     
+    func performShield(player: Player) {
+        player.addFaith(faith: .shield)
+    }
+    
     func perform(player: Player, state: RoleState, cause: RoleCause) {
         
         checkWitchAbilities(cause: cause)
@@ -148,6 +152,14 @@ final class PlayerStorage: ObservableObject {
             objectWillChange.send()
             return
         } else {
+            
+            if cause == .shield {
+                performShield(player: player)
+                player.setState(state: .alive)
+                objectWillChange.send()
+                return
+            }
+            
             player.setState(state: state)
             player.role.setCause(cause: cause)
             objectWillChange.send()

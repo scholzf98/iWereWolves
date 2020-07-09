@@ -33,7 +33,7 @@ enum RoleType: String, CaseIterable {
 
 enum RoleCause {
     
-    case eat, lynch, love, heal, prince, safe, poison, killed, revive, shoot, none
+    case eat, lynch, love, heal, prince, shield, poison, killed, revive, shoot, none
     
     var name: String {
         switch self {
@@ -42,7 +42,7 @@ enum RoleCause {
         case .love: return "Liebeskummer"
         case .heal: return "Geheilt"
         case .prince: return "Der Prinz"
-        case .safe: return "Geschützt"
+        case .shield: return "Geschützt"
         case .poison: return "Vergiftet"
         case .killed: return "Getötet"
         case .revive: return "Wiederbelebt"
@@ -80,7 +80,7 @@ struct Role: Hashable {
 
 enum Faith: String, CaseIterable {
     
-    case major, amor, loved, hunter, witch, witchHeal, witchPoison, none
+    case major, amor, loved, hunter, witch, witchHeal, witchPoison, shield, none
     
     var name: String {
         switch self {
@@ -89,6 +89,7 @@ enum Faith: String, CaseIterable {
         case .loved: return "Verliebter"
         case .hunter: return "Jäger"
         case .witch, .witchHeal, .witchPoison: return ""
+        case .shield: return "Beschützt"
         case .none: return "Keine"
         }
     }
@@ -100,6 +101,7 @@ enum Faith: String, CaseIterable {
         case .hunter: return "bolt.fill"
         case .witchHeal: return "plus.circle"
         case .witchPoison: return "multiply.circle"
+        case .shield: return "shield.fill"
         case .none, .witch: return ""
         }
     }
@@ -115,7 +117,7 @@ enum ActiveAlert {
 }
 
 enum ActionErrorAlert {
-    case witchHeal, witchPoison, noWitch, none
+    case witchHeal, witchPoison, noWitch, alreadyShield, none
 }
 
 class Player: Identifiable, ObservableObject, Comparable {

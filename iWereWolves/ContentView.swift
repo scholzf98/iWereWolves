@@ -106,6 +106,28 @@ struct PlayerRow: View {
                 }
                 
                 Button(action: {
+                    
+                    
+                    if let shielded = playerStore.getPlayer(for: .shield) {
+                        
+                        if shielded.id == player.id {
+                            activeErrorAlert = .alreadyShield
+                            showErrorAlert.toggle()
+                        } else {
+                            shielded.removeFaith(faith: .shield)
+                            playerStore.perform(player: player, state: .alive, cause: .shield)
+                        }
+                        
+                    } else {
+                        playerStore.perform(player: player, state: .alive, cause: .shield)
+                    }
+                    
+                }) {
+                    Text("Geschützt")
+                    Image(systemName: "shield.fill")
+                }
+                
+                Button(action: {
                     if let witch = playerStore.getPlayer(for: .witch) {
                         
                         if witch.faiths.contains(.witchPoison) {
@@ -120,7 +142,7 @@ struct PlayerRow: View {
                         showErrorAlert.toggle()
                     }
                 }) {
-                    Text("Vergiften")
+                    Text("Gifttrank")
                     Image(systemName: "minus.circle")
                 }
                 
@@ -138,7 +160,7 @@ struct PlayerRow: View {
                         showErrorAlert.toggle()
                     }
                 }) {
-                    Text("Heilen")
+                    Text("Heiltrank")
                     Image(systemName: "plus.circle")
                 }
                 
@@ -155,6 +177,8 @@ struct PlayerRow: View {
                 return Alert(title: Text("iWere"), message: Text("Du kann nicht mehr heilen!"), dismissButton: .default(Text("OK")))
             } else if activeErrorAlert == .witchPoison {
                 return Alert(title: Text("iWere"), message: Text("Du kann nicht mehr vergiften!"), dismissButton: .default(Text("OK")))
+            } else if activeErrorAlert == .alreadyShield {
+                return Alert(title: Text("iWere"), message: Text("Du kann nicht zwei Mal hintereinander den gleichen Spieler schützen"), dismissButton: .default(Text("OK")))
             } else {
                 return Alert(title: Text("iWere"), message: Text("Es ist keine Hexe im Spiel!"), dismissButton: .default(Text("OK")))
             }
