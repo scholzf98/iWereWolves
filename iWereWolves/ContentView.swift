@@ -15,7 +15,13 @@ struct FaithsView: View {
     var body: some View {
         HStack {
             ForEach(faiths, id: \.self) { faith in
-                Image(systemName: faith.imageName)
+                
+                if faith == .witchHeal || faith == .witchPoison {
+                    Image(systemName: faith.imageName)
+                } else {
+                    Image(systemName: faith.imageName)
+                }
+                
             }
         }
         
@@ -26,7 +32,10 @@ struct FaithsView: View {
 struct PlayerRow: View {
     
     @State var player: Player
+    @State private var showErrorAlert = false
+    @State private var activeErrorAlert: ActionErrorAlert = .none
     @ObservedObject var playerStore: PlayerStorage
+    
     
     var body: some View {
         HStack {
@@ -66,13 +75,6 @@ struct PlayerRow: View {
                     Image(systemName: "person.circle")
                 }
                 
-                Button(action: {
-                    playerStore.perform(player: player, state: .dead, cause: .shoot)
-                }) {
-                    Text("Erschießen")
-                    Image(systemName: "bolt.fill")
-                }
-                
             } else {
                 
                 Button(action: {
@@ -80,6 +82,13 @@ struct PlayerRow: View {
                 }) {
                     Text("Töten")
                     Image(systemName: "multiply.circle")
+                }
+                
+                Button(action: {
+                    playerStore.perform(player: player, state: .dead, cause: .shoot)
+                }) {
+                    Text("Erschießen")
+                    Image(systemName: "bolt.fill")
                 }
                 
                 Button(action: {
@@ -97,6 +106,43 @@ struct PlayerRow: View {
                 }
                 
                 Button(action: {
+                    if let witch = playerStore.getPlayer(for: .witch) {
+                        
+                        if witch.faiths.contains(.witchPoison) {
+                            playerStore.perform(player: player, state: .dead, cause: .poison)
+                        } else {
+                            activeErrorAlert = .witchPoison
+                            showErrorAlert.toggle()
+                        }
+                        
+                    } else {
+                        activeErrorAlert = .noWitch
+                        showErrorAlert.toggle()
+                    }
+                }) {
+                    Text("Vergiften")
+                    Image(systemName: "minus.circle")
+                }
+                
+                Button(action: {
+                    
+                    if let witch = playerStore.getPlayer(for: .witch) {
+                        if witch.faiths.contains(.witchHeal) {
+                            playerStore.perform(player: player, state: .alive, cause: .heal)
+                        } else {
+                            activeErrorAlert = .witchHeal
+                            showErrorAlert.toggle()
+                        }
+                    } else {
+                        activeErrorAlert = .noWitch
+                        showErrorAlert.toggle()
+                    }
+                }) {
+                    Text("Heilen")
+                    Image(systemName: "plus.circle")
+                }
+                
+                Button(action: {
                     playerStore.perform(player: player, state: .alive, cause: .revive)
                 }) {
                     Text("Wiederbeleben")
@@ -104,6 +150,15 @@ struct PlayerRow: View {
                 }
             }
         }
+        .alert(isPresented: $showErrorAlert, content: {
+            if activeErrorAlert == .witchHeal {
+                return Alert(title: Text("iWere"), message: Text("Du kann nicht mehr heilen!"), dismissButton: .default(Text("OK")))
+            } else if activeErrorAlert == .witchPoison {
+                return Alert(title: Text("iWere"), message: Text("Du kann nicht mehr vergiften!"), dismissButton: .default(Text("OK")))
+            } else {
+                return Alert(title: Text("iWere"), message: Text("Es ist keine Hexe im Spiel!"), dismissButton: .default(Text("OK")))
+            }
+        })
     }
 }
 
@@ -200,7 +255,7 @@ struct ContentView: View {
         _ = timer.connect()
     }
     
-    func startGame() {
+    func validate() {
         switch playerStore.validate() {
         case .loved:
             activeAlert = .loved
@@ -233,17 +288,18 @@ struct ContentView: View {
                     }
                     
                 }
+                .onTapGesture(perform: validate)
                 .navigationTitle("iWere")
-                
                 .navigationBarItems(leading:
                                         HStack(spacing: 25) {
                                             Button(action: {
-                                                startGame()
+                                                validate()
                                             }, label: {
                                                 Image(systemName: "play.fill")
                                             })
                                             
                                             Button(action: {
+                                                print(playerStore.validate())
                                                 if playerStore.validate() != .none {
                                                     activeAlert = playerStore.validate()
                                                     print(activeAlert)
@@ -262,13 +318,13 @@ struct ContentView: View {
                 )
                 .alert(isPresented: $showAlert) {
                     if activeAlert == .loved {
-                        return Alert(title: Text("iWere"), message: Text("Wähle einen Verliebten aus"), dismissButton: .default(Text("OK")))
+                        return Alert(title: Text("iWere"), message: Text("Wähle einen Verliebten aus!"), dismissButton: .default(Text("OK")))
                     } else if activeAlert == .timer {
-                        return Alert(title: Text("iWere"), message: Text("Der Timer ist abgelaufen"), dismissButton: .default(Text("OK")))
+                        return Alert(title: Text("iWere"), message: Text("Der Timer ist abgelaufen!"), dismissButton: .default(Text("OK")))
                     } else if activeAlert == .major {
-                        return Alert(title: Text("iWere"), message: Text("Wähle einen Bürgermeister aus"), dismissButton: .default(Text("OK")))
+                        return Alert(title: Text("iWere"), message: Text("Wähle einen Bürgermeister aus!"), dismissButton: .default(Text("OK")))
                     } else {
-                        return Alert(title: Text("iWere"), message: Text("Der Jäger muss jemanden erschießen"), dismissButton: .default(Text("OK")))
+                        return Alert(title: Text("iWere"), message: Text("Der Jäger muss jemanden erschießen!"), dismissButton: .default(Text("OK")))
                     }
                 }
                 .sheet(isPresented: $showAddPlayerView) {
