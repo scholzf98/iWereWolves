@@ -20,7 +20,7 @@ let testData =
 struct iWereWolvesApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView(playerStore: PlayerStorage(players: testData))
+            ContentView(playerStore: PlayerStorage())
         }
     }
 }

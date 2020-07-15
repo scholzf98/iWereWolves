@@ -322,6 +322,11 @@ struct ContentView: View {
         }
     }
     
+    func delete(at offset: IndexSet) {
+        playerStore.players.remove(atOffsets: offset)
+        playerStore.objectWillChange.send()
+    }
+    
     var body: some View {
         
         NavigationView {
@@ -339,6 +344,7 @@ struct ContentView: View {
                     ForEach(playerStore.players) { player in
                         PlayerRow(player: player, playerStore: playerStore)
                     }
+                    .onDelete(perform: delete)
                     
                 }
                 .onTapGesture(perform: validate)
@@ -376,6 +382,8 @@ struct ContentView: View {
                         return Alert(title: Text("iWere"), message: Text("Der Timer ist abgelaufen!"), dismissButton: .default(Text("OK")))
                     } else if activeAlert == .major {
                         return Alert(title: Text("iWere"), message: Text("Wähle einen Bürgermeister aus!"), dismissButton: .default(Text("OK")))
+                    } else if activeAlert == .finished {
+                        return Alert(title: Text("iWere"), message: Text("Das Spiel ist zuende!"), dismissButton: .default(Text("OK")))
                     } else {
                         return Alert(title: Text("iWere"), message: Text("Der Jäger muss jemanden erschießen!"), dismissButton: .default(Text("OK")))
                     }

@@ -188,13 +188,39 @@ final class PlayerStorage: ObservableObject {
         let loved = players.contains(where: { $0.faiths.contains(.loved) })
         let major = players.contains(where: { $0.faiths.contains(.major) })
         let hunter = players.contains(where: { $0.faiths.contains(.hunter) })
+        var alive = players
+        alive.removeAll(where: { $0.state == .dead } )
         
         var value: ActiveAlert = .none
         
         if amor && !loved {
             value = .loved
         } else if !major {
-            value = .major
+            
+            var deadPlayers = players
+            deadPlayers.removeAll(where: {$0.state == .alive})
+            
+            if deadPlayers.count != 0 {
+                value = .major
+            } else {
+                value = .none
+            }
+        } else if !alive.isEmpty {
+            
+            if alive.count == 2 {
+                if alive.first!.faiths.contains(.loved) || alive.first!.faiths.contains(.amor) {
+                    let loved = getPlayer(for: .loved)
+                    let amor = getPlayer(for: .amor)
+                    
+                    if loved != nil && amor != nil {
+                        value = .finished
+                    }
+                    
+                }
+            } else {
+                value = .none
+            }
+            
         } else if hunter {
             
             if let pHunter = getPlayer(for: .hunter) {

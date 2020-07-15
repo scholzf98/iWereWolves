@@ -153,7 +153,7 @@ enum RoleState {
 }
 
 enum ActiveAlert {
-    case major, loved, timer, hunter, none
+    case major, loved, timer, hunter, finished, none
 }
 
 enum ActionErrorAlert {
